@@ -1,5 +1,7 @@
 ﻿#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
+using System;
+using System.IO;
 using System.Security.Cryptography;
 using TorchSharp.Modules;
 
@@ -37,13 +39,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "alexnet.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "alexnet.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as AlexNet)!;
     }
     public static GoogleNet LoadModel(this GoogleNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -74,13 +71,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "googlenet.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "googlenet.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as GoogleNet)!;
     }
     public static InceptionV3 LoadModel(this InceptionV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -111,13 +103,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "inception_v3.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "inception_v3.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as InceptionV3)!;
     }
 
@@ -150,13 +137,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "mobilenet_v2.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "mobilenet_v2.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV2)!;
     }
 
@@ -189,13 +170,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "mobilenet_v3_large.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "mobilenet_v3_large.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
     }
 
@@ -228,13 +203,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "mobilenet_v3_small.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "mobilenet_v3_small.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
     }
 
@@ -267,13 +236,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "resnet101.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet101.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
@@ -306,13 +270,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "resnet152.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet152.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
@@ -345,13 +304,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "resnet18.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet18.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
@@ -384,13 +337,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "resnet34.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet34.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
@@ -423,13 +371,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "resnet50.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet50.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
@@ -462,13 +405,8 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg11.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg11.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
-        File.Move(tempFilePath, modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -501,13 +439,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg11_bn.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg11_bn.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -540,13 +472,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg13.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg13.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -579,13 +505,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg13_bn.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg13_bn.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -618,13 +538,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg16.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg16.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -658,13 +572,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg16_bn.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg16_bn.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -697,13 +605,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg19.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg19.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -737,13 +639,7 @@ public static partial class MM
             File.Delete(modelPath);
         }
 
-        using var modelStream = await httpClient.GetStreamAsync(ReposityBase + "vgg19_bn.dat");
-        using (var fileStream = File.Create(Path.Combine(torchcsharpDir, tempFilePath)))
-        {
-            await modelStream.CopyToAsync(fileStream);
-        }
-
-        File.Move(tempFilePath, modelPath);
+        await DownloadFileWithProgressAsync(httpClient, ReposityBase + "vgg19_bn.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
@@ -779,5 +675,44 @@ public static partial class MM
         }
 
         return torchcsharpDir;
+    }
+
+    private static async Task DownloadFileWithProgressAsync(HttpClient httpClient, string url, string tempFilePath, string destinationPath, int chunkSize = 32 * 1024)
+    {
+        var fileName = Path.GetFileName(destinationPath);
+        using HttpResponseMessage response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+        response.EnsureSuccessStatusCode();
+
+        long? totalBytes = response.Content.Headers.ContentLength;
+        using var contentStream = await response.Content.ReadAsStreamAsync();
+        using var fileStream = File.Create(tempFilePath);
+
+        byte[] buffer = new byte[chunkSize];
+        long totalRead = 0;
+        int bytesRead;
+        while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        {
+            await fileStream.WriteAsync(buffer, 0, bytesRead);
+            totalRead += bytesRead;
+
+            if (totalBytes.HasValue)
+            {
+                PrintProgress(fileName, totalRead, totalBytes.Value);
+            }
+        }
+
+        File.Move(tempFilePath, destinationPath);
+
+    }
+
+    static void PrintProgress(string name, long bytesRead, long totalBytes)
+    {
+        int totalBlocks = 50;
+        double percentage = (double)bytesRead / totalBytes * 100;
+        int filledBlocks = (int)(totalBlocks * bytesRead / totalBytes);
+
+        string progressBar = "[" + new string('#', filledBlocks) + new string('-', totalBlocks - filledBlocks) + "]";
+        Console.SetCursorPosition(0, Console.CursorTop);
+        Console.Write($"{name}: {progressBar} {percentage:F2}%");
     }
 }
