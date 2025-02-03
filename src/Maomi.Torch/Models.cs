@@ -8,7 +8,10 @@ using TorchSharp.Modules;
 namespace Maomi.Torch;
 public static partial class MM
 {
-    private const string ReposityBase = "https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/";
+    public static string ReposityBase { get; set; } = Huggingface;
+
+    public const string Huggingface = "https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/";
+    public const string ModelScope = "https://www.modelscope.cn/models/whuanle/torchcsharp/resolve/master/datS/";
 
     public static AlexNet LoadModel(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
@@ -656,15 +659,22 @@ public static partial class MM
 
     private static async Task<string> GetModelMd5(HttpClient httpClient, string modelFileName)
     {
+        Console.WriteLine($"Checking md5 for model file {modelFileName}");
         var md5 = await httpClient.GetStringAsync(ReposityBase + modelFileName + ".md5");
         return md5;
     }
 
     private static string CheckPath()
     {
-        string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var cacheDir = Path.Combine(userDirectory, ".cache");
-        var torchcsharpDir = Path.Combine(userDirectory, ".cache", "torchcsharp");
+        var cacheDir = Environment.GetEnvironmentVariable("CSTORCH_HOME");
+
+        if (string.IsNullOrEmpty(cacheDir))
+        {
+            string userDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            cacheDir = Path.Combine(userDirectory, ".cache");
+        }
+
+        var torchcsharpDir = Path.Combine(cacheDir, "torchcsharp");
         if (!Directory.Exists(cacheDir))
         {
             Directory.CreateDirectory(cacheDir);
@@ -680,6 +690,8 @@ public static partial class MM
     private static async Task DownloadFileWithProgressAsync(HttpClient httpClient, string url, string tempFilePath, string destinationPath, int chunkSize = 32 * 1024)
     {
         var fileName = Path.GetFileName(destinationPath);
+        Console.WriteLine($"Downloading {url} to {tempFilePath}");
+
         using HttpResponseMessage response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
         response.EnsureSuccessStatusCode();
 
@@ -697,15 +709,16 @@ public static partial class MM
 
             if (totalBytes.HasValue)
             {
-                PrintProgress(fileName, totalRead, totalBytes.Value);
+                PrintProgress(totalRead, totalBytes.Value);
             }
         }
 
-        File.Move(tempFilePath, destinationPath);
+        fileStream.Dispose();
 
+        File.Move(tempFilePath, destinationPath);
     }
 
-    static void PrintProgress(string name, long bytesRead, long totalBytes)
+    static void PrintProgress(long bytesRead, long totalBytes)
     {
         int totalBlocks = 50;
         double percentage = (double)bytesRead / totalBytes * 100;
@@ -713,6 +726,6 @@ public static partial class MM
 
         string progressBar = "[" + new string('#', filledBlocks) + new string('-', totalBlocks - filledBlocks) + "]";
         Console.SetCursorPosition(0, Console.CursorTop);
-        Console.Write($"{name}: {progressBar} {percentage:F2}%");
+        Console.Write($" {bytesRead}/{totalBytes} {progressBar} {percentage:F2}%");
     }
 }

@@ -16,7 +16,6 @@ var preprocess = transforms.Compose(
 
 // 加载图形并缩放裁剪
 var img = MM.LoadImage("bobby.jpg");
-img.ShowImage();
 
 // 使用转换函数处理图形
 img = preprocess.call(img);
@@ -52,3 +51,5 @@ for (int i = 0; i < 5; i++)
 {
     Console.WriteLine("result:" + labels[(int)indices[0][i]] + ",chance:" + percentage[(int)indices[0][i]].item<float>().ToString());
 }
+
+var r = model.resnet152();
