@@ -7,7 +7,7 @@
 		<Nullable>enable</Nullable>
 
 		<IsPackable>true</IsPackable>
-		<PackageVersion>0.0.1</PackageVersion>
+		<PackageVersion>0.0.4</PackageVersion>
 		<Title>Maomi.Plot</Title>
 		<Description>
 			C# 绘图框架和 Pytorch 扩展包.

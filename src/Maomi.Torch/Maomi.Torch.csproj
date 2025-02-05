@@ -8,7 +8,7 @@
 		<RootNamespace>Maomi.Torch</RootNamespace>
 
 		<IsPackable>true</IsPackable>
-		<PackageVersion>0.0.3</PackageVersion>
+		<PackageVersion>0.0.4</PackageVersion>
 		<Title>Maomi.Torch</Title>
 		<Description>
 			C# Pytorch 深度学习框架扩展包.
