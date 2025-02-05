@@ -74,15 +74,27 @@ public static partial class MM
         byte[,,] imageData = new byte[channels, height, width];
         Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(byte));
 
-        using (var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    byte r = (byte)(imageData[0, y, x] * 255.0f);
-                    byte g = (byte)(imageData[1, y, x] * 255.0f);
-                    byte b = (byte)(imageData[2, y, x] * 255.0f);
+                    byte r, g, b;
+                    if (channels == 1)
+                    {
+                        // 处理灰度图像
+                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
+                        r = gray;
+                        g = gray;
+                        b = gray;
+                    }
+                    else
+                    {
+                        r = (byte)(imageData[0, y, x] * 255.0f);
+                        g = (byte)(imageData[1, y, x] * 255.0f);
+                        b = (byte)(imageData[2, y, x] * 255.0f);
+                    }
 
                     var color = new SKColor(r, g, b);
                     bitmap.SetPixel(x, y, color);
@@ -106,15 +118,27 @@ public static partial class MM
         float[,,] imageData = new float[channels, height, width];
         Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(float));
 
-        using (var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    byte r = (byte)(imageData[0, y, x] * 255.0f);
-                    byte g = (byte)(imageData[1, y, x] * 255.0f);
-                    byte b = (byte)(imageData[2, y, x] * 255.0f);
+                    byte r, g, b;
+                    if (channels == 1)
+                    {
+                        // 处理灰度图像
+                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
+                        r = gray;
+                        g = gray;
+                        b = gray;
+                    }
+                    else
+                    {
+                        r = (byte)(imageData[0, y, x] * 255.0f);
+                        g = (byte)(imageData[1, y, x] * 255.0f);
+                        b = (byte)(imageData[2, y, x] * 255.0f);
+                    }
 
                     var color = new SKColor(r, g, b);
                     bitmap.SetPixel(x, y, color);
@@ -138,15 +162,28 @@ public static partial class MM
         double[,,] imageData = new double[channels, height, width];
         Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(double));
 
-        using (var bitmap = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    byte r = (byte)(imageData[0, y, x] * 255.0f);
-                    byte g = (byte)(imageData[1, y, x] * 255.0f);
-                    byte b = (byte)(imageData[2, y, x] * 255.0f);
+                    byte r, g, b;
+                    if (channels == 1)
+                    {
+                        // 处理灰度图像
+                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
+                        r = gray;
+                        g = gray;
+                        b = gray;
+                    }
+                    else
+                    {
+                        r = (byte)(imageData[0, y, x] * 255.0f);
+                        g = (byte)(imageData[1, y, x] * 255.0f);
+                        b = (byte)(imageData[2, y, x] * 255.0f);
+                    }
+
 
                     var color = new SKColor(r, g, b);
                     bitmap.SetPixel(x, y, color);

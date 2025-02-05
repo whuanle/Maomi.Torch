@@ -1,42 +1,14 @@
-﻿using Maomi.Torch;
-using Maomi.Torch;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Runtime.InteropServices;
-using TorchSharp;
+﻿using TorchSharp;
 using static TorchSharp.torch;
-using nn = TorchSharp.torch.nn;
-using optim = TorchSharp.torch.optim;
 using datasets = TorchSharp.torchvision.datasets;
 using transforms = TorchSharp.torchvision.transforms;
+using Maomi.Torch;
 using TorchSharp.Modules;
-using static TorchSharp.torch.optim.lr_scheduler.impl;
 
-Device defaultDevice = default;
-if (torch.cuda.is_available())
-{
-    Console.WriteLine("当前设备支持 GPU");
-    defaultDevice = torch.device("cuda", index: 0);
-    // 使用 GPU 启动
-    torch.set_default_device(defaultDevice);
-}
-else if (torch.mps_is_available())
-{
-    Console.WriteLine("当前设备支持 MPS");
-    defaultDevice = torch.device("mps", index: 0);
-    // 使用 MPS 启动
-    torch.set_default_device(defaultDevice);
-}
-else
-{
-    defaultDevice = torch.device("cpu");
-    // 使用 CPU 启动
-    torch.set_default_device(defaultDevice);
-}
+Device defaultDevice = MM.GetOpTimalDevice();
+torch.set_default_device(defaultDevice);
 
-
-var default_device = torch.get_default_device();
-Console.WriteLine($"当前正在使用 {default_device}");
+Console.WriteLine($"当前正在使用 {defaultDevice}");
 
 // 指定训练数据集
 var training_data = datasets.FashionMNIST(
@@ -55,45 +27,147 @@ var test_data = datasets.FashionMNIST(
     );
 
 // 分批加载图像，打乱顺序
-var train_loader = torch.utils.data.DataLoader(training_data, batchSize: 100, shuffle: true);
+var train_loader = torch.utils.data.DataLoader(training_data, batchSize: 64, shuffle: true, device: defaultDevice);
+
 // 分批加载图像，不打乱顺序
-var test_loader = torch.utils.data.DataLoader(test_data, batchSize: 100, shuffle: false);
+var test_loader = torch.utils.data.DataLoader(test_data, batchSize: 64, shuffle: false, device: defaultDevice);
 
-for (int i = 0; i < training_data.Count; i++)
+// 初始化神经网络，并使用合适的设备加载网络
+var model = new NeuralNetwork();
+model.to(defaultDevice);
+
+// 定义损失函数、优化器和学习率
+var loss_fn = nn.CrossEntropyLoss();
+var optimizer = torch.optim.SGD(model.parameters(), learningRate: 1e-3);
+
+// 训练的轮数
+var epochs = 5;
+
+foreach (var epoch in Enumerable.Range(0, epochs))
 {
-    var dic = training_data.GetTensor(i);
-    var img = dic["data"];
-    var label = dic["label"];
+    Console.WriteLine($"Epoch {epoch + 1}\n-------------------------------");
+    Train(train_loader, model, loss_fn, optimizer);
+    Test(train_loader, model, loss_fn);
 }
-var tinymodel = new TinyModel();
 
+Console.WriteLine("Done!");
 
-public class TinyModel : nn.Module<Tensor, Tensor>
+model.save("model.dat");
+Console.WriteLine("Saved PyTorch Model State to model.dat");
+
+model.load("model.dat");
+
+var classes = new string[] {
+    "T-shirt/top",
+    "Trouser",
+    "Pullover",
+    "Dress",
+    "Coat",
+    "Sandal",
+    "Shirt",
+    "Sneaker",
+    "Bag",
+    "Ankle boot",
+};
+
+model.eval();
+
+// 加载测试数据中的第一个图片以及其标签
+var x = test_data.GetTensor(0)["data"];
+var y = test_data.GetTensor(0)["label"];
+
+x.SavePng("0.png");
+
+using (torch.no_grad())
 {
-    // 传递给基类的参数是模型的名称
-    public TinyModel() : base(nameof(TinyModel))
-    {
-        linear1 = nn.Linear(100, 200);
-        activation = nn.ReLU();
-        softmax = nn.Softmax(1);
-        linear2 = nn.Linear(200, 10);
+    x = x.to(defaultDevice);
+    var pred = model.call(x);
+    var predicted = classes[pred[0].argmax(0).ToInt32()];
+    var actual = classes[y.ToInt32()];
+    Console.WriteLine($"Predicted: \"{predicted}\", Actual: \"{actual}\"");
 
-        // C# 版本需要调用这个函数，将模型的组件注册到模型中
-        RegisterComponents();
+}
+
+var img = MM.LoadImage("0.png");
+using (torch.no_grad())
+{
+    img = img.to(defaultDevice);
+    var pred = model.call(img);
+
+    // 转换为归一化的概率
+    var array = torch.nn.functional.softmax(pred, dim: 0);
+    var max = array.ToFloat32Array().Max();
+    var predicted = classes[pred[0].argmax(0).ToInt32()];
+    Console.WriteLine($"识别结果 {predicted}，概率 {max * 100}%");
+}
+
+static void Train(DataLoader dataloader, NeuralNetwork model, CrossEntropyLoss loss_fn, SGD optimizer)
+{
+    var size = dataloader.dataset.Count;
+    model.train();
+
+    int batch = 0;
+    foreach (var item in dataloader)
+    {
+        var x = item["data"];
+        var y = item["label"];
+
+        // 第一步
+        // 训练当前图片
+        var pred = model.call(x);
+
+        // 通过损失函数得出与真实结果的误差
+        var loss = loss_fn.call(pred, y);
+
+        // 第二步，反向传播
+        loss.backward();
+
+        // 计算梯度并优化参数
+        optimizer.step();
+
+        // 清空优化器当前的梯度
+        optimizer.zero_grad();
+
+        // 每 100 次打印损失值和当前训练的图片数量
+        if (batch % 100 == 0)
+        {
+            loss = loss.item<float>();
+            var current = (batch + 1) * x.shape[0];
+            Console.WriteLine($"loss: {loss.item<float>(),7}  [{current,5}/{size,5}]");
+        }
+
+        batch++;
+    }
+}
+
+static void Test(DataLoader dataloader, NeuralNetwork model, CrossEntropyLoss loss_fn)
+{
+    var size = (int)dataloader.dataset.Count;
+    var num_batches = (int)dataloader.Count;
+
+    // 将模型设置为评估模式
+    model.eval();
+
+    var test_loss = 0F;
+    var correct = 0F;
+
+    using (var n = torch.no_grad())
+    {
+        foreach (var item in dataloader)
+        {
+            var x = item["data"];
+            var y = item["label"];
+
+            // 使用已训练的参数预测测试数据
+            var pred = model.call(x);
+
+            // 计算损失值
+            test_loss += loss_fn.call(pred, y).item<float>();
+            correct += (pred.argmax(1) == y).type(ScalarType.Float32).sum().item<float>();
+        }
     }
 
-    Linear linear1;
-    ReLU activation;
-    Linear linear2;
-    Softmax softmax;
-
-    public override Tensor forward(Tensor input)
-    {
-        // 将输入一层层处理并传递给下一层
-        var x = linear1.call(input);
-        x = activation.call(x);
-        x = linear2.call(x);
-        x = softmax.call(x);
-        return x;
-    }
+    test_loss /= num_batches;
+    correct /= size;
+    Console.WriteLine($"Test Error: \n Accuracy: {(100 * correct):F1}%, Avg loss: {test_loss:F8} \n");
 }

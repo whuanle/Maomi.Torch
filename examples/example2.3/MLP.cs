@@ -1,15 +1,7 @@
 ﻿using TorchSharp;
 using static TorchSharp.torch;
 
-using TorchSharp.Modules;
-using TorchSharp.Data;
-
-
 using nn = TorchSharp.torch.nn;
-using optim = TorchSharp.torch.optim;
-using datasets = TorchSharp.torchvision.datasets;
-using transforms = TorchSharp.torchvision.transforms;
-using System.Drawing;
 
 public class MLP : nn.Module<Tensor, Tensor>, IDisposable
 {
@@ -29,7 +21,7 @@ public class MLP : nn.Module<Tensor, Tensor>, IDisposable
     /// <param name="hiddenSize">隐藏层大小.</param>
     /// <param name="outputSize">输出层大小，例如有多少个分类.</param>
     /// <param name="device"></param>
-    public MLP(int inputSize, int hiddenSize, int outputSize, Device device) : base(nameof(MLP))
+    public MLP(int inputSize, int hiddenSize, int outputSize) : base(nameof(MLP))
     {
         _inputSize = inputSize;
         _hiddenSize = hiddenSize;
@@ -37,12 +29,11 @@ public class MLP : nn.Module<Tensor, Tensor>, IDisposable
 
         // 定义激活函数和线性层
         relu = nn.ReLU();
-        fc1 = nn.Linear(inputSize, hiddenSize, device: device);
-        fc2 = nn.Linear(hiddenSize, hiddenSize, device: device);
-        fc3 = nn.Linear(hiddenSize, outputSize, device: device);
+        fc1 = nn.Linear(inputSize, hiddenSize);
+        fc2 = nn.Linear(hiddenSize, hiddenSize);
+        fc3 = nn.Linear(hiddenSize, outputSize);
 
         RegisterComponents();
-
     }
 
     public override torch.Tensor forward(torch.Tensor input)

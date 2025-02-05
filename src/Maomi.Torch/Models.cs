@@ -11,7 +11,7 @@ public static partial class MM
     public static string ReposityBase { get; set; } = Huggingface;
 
     public const string Huggingface = "https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/";
-    public const string ModelScope = "https://www.modelscope.cn/models/whuanle/torchcsharp/resolve/master/datS/";
+    public const string ModelScope = "https://www.modelscope.cn/models/whuanle/torchcsharp/resolve/master/dats/";
 
     public static AlexNet LoadModel(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {

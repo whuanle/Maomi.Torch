@@ -8,7 +8,7 @@
 		<RootNamespace>Maomi.Plot</RootNamespace>
 
 		<IsPackable>true</IsPackable>
-		<PackageVersion>0.0.1</PackageVersion>
+		<PackageVersion>0.0.3</PackageVersion>
 		<Title>Maomi.Plot</Title>
 		<Description>
 			C# 绘图框架扩展包.

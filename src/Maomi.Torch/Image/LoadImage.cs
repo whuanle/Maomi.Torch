@@ -23,14 +23,20 @@ public static partial class MM
     {
         using (SKBitmap bitmap = SKBitmap.Decode(imagePath))
         {
-            if (bitmap.ColorType != SKColorType.Bgra8888 && bitmap.ColorType != SKColorType.Rgba8888)
+            if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
             {
-                throw new InvalidOperationException("Expected color type: Bgra8888 or Rgba8888.");
+                var tensorImg = ImageToGrayTensor(bitmap);
+
+                return tensorImg;
+            }
+            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
+            {
+                var tensorImg = ImageToTensor(bitmap, channels);
+                return tensorImg;
             }
 
-            var tensorImg = ImageToTensor(bitmap, channels);
+            throw new InvalidOperationException("Expected color type.");
 
-            return tensorImg;
         }
     }
 
@@ -46,14 +52,19 @@ public static partial class MM
     {
         using (SKBitmap bitmap = SKBitmap.Decode(stream))
         {
-            if (bitmap.ColorType != SKColorType.Bgra8888 && bitmap.ColorType != SKColorType.Rgba8888)
+            if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
             {
-                throw new InvalidOperationException("Expected color type: Bgra8888 or Rgba8888.");
+                var tensorImg = ImageToGrayTensor(bitmap);
+
+                return tensorImg;
+            }
+            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
+            {
+                var tensorImg = ImageToTensor(bitmap, channels);
+                return tensorImg;
             }
 
-            var tensorImg = ImageToTensor(bitmap, channels);
-
-            return tensorImg;
+            throw new InvalidOperationException("Expected color type.");
         }
     }
 
@@ -71,14 +82,19 @@ public static partial class MM
         var stream = await httpClient.GetStreamAsync(url);
         using (SKBitmap bitmap = SKBitmap.Decode(stream))
         {
-            if (bitmap.ColorType != SKColorType.Bgra8888 && bitmap.ColorType != SKColorType.Rgba8888)
+            if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
             {
-                throw new InvalidOperationException("Expected color type: Bgra8888 or Rgba8888.");
+                var tensorImg = ImageToGrayTensor(bitmap);
+
+                return tensorImg;
+            }
+            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
+            {
+                var tensorImg = ImageToTensor(bitmap, channels);
+                return tensorImg;
             }
 
-            var tensorImg = ImageToTensor(bitmap, channels);
-
-            return tensorImg;
+            throw new InvalidOperationException("Expected color type.");
         }
     }
 
@@ -97,14 +113,21 @@ public static partial class MM
         {
             using (SKBitmap bitmap = SKBitmap.Decode(imagePath))
             {
-                if (bitmap.ColorType != SKColorType.Bgra8888 && bitmap.ColorType != SKColorType.Rgba8888)
+                Tensor? tensorImg = default;
+                if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
                 {
-                    throw new InvalidOperationException("Expected color type: Bgra8888 or Rgba8888.");
+                    tensorImg = ImageToGrayTensor(bitmap);
+                    tensors.Add(tensorImg);
                 }
-
-                var tensorImg = ImageToTensor(bitmap, channels);
-
-                tensors.Add(tensorImg);
+                else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
+                {
+                     tensorImg = ImageToTensor(bitmap, channels);
+                    tensors.Add(tensorImg);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected color type.");
+                }
             }
         }
 
@@ -129,11 +152,19 @@ public static partial class MM
             var stream = await httpClient.GetStreamAsync(url);
             using (SKBitmap bitmap = SKBitmap.Decode(stream))
             {
-                if (bitmap.ColorType != SKColorType.Bgra8888 && bitmap.ColorType != SKColorType.Rgba8888)
+                Tensor? tensorImg = default;
+                if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
                 {
-                    throw new InvalidOperationException("Expected color type: Bgra8888 or Rgba8888.");
+                    tensorImg = ImageToGrayTensor(bitmap);
                 }
-                var tensorImg = ImageToTensor(bitmap, channels);
+                else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
+                {
+                    tensorImg = ImageToTensor(bitmap, channels);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected color type.");
+                }
                 tensors[index] = tensorImg;
             }
         };
@@ -171,6 +202,36 @@ public static partial class MM
         Buffer.BlockCopy(floatData, 0, flattenedData, 0, flattenedData.Length * sizeof(float));
 
         var tensor = torch.tensor(flattenedData, new long[] { 1, channels, height, width });
+
+        return tensor;
+    }
+
+    private static Tensor ImageToGrayTensor(SKBitmap bitmap)
+    {
+        int width = bitmap.Width;
+        int height = bitmap.Height;
+
+        float[,,] floatData = new float[1, height, width];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                SKColor color = bitmap.GetPixel(x, y);
+
+                // Convert to grayscale using a standard formula
+                // 将彩色图像转换为灰度值（标准加权法）
+                float gray = (0.299f * color.Red + 0.587f * color.Green + 0.114f * color.Blue) / 255.0f;
+                floatData[0, y, x] = gray;
+            }
+        }
+
+        // Convert a multidimensional array to a one-dimensional array (for tensor creation).
+        // 将多维数组转换为一维数组（为了进行张量创建）.
+        float[] flattenedData = new float[1 * height * width];
+        Buffer.BlockCopy(floatData, 0, flattenedData, 0, flattenedData.Length * sizeof(float));
+
+        var tensor = torch.tensor(flattenedData, new long[] { 1, height, width });
 
         return tensor;
     }

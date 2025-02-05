@@ -19,4 +19,13 @@
 		<ProjectReference Include="..\..\src\Maomi.Torch\Maomi.Torch.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="5.jpg">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Update="6.jpg">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>

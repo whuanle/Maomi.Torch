@@ -1,11 +1,27 @@
 ﻿using Maomi.Torch;
 using TorchSharp;
 using TorchSharp.Modules;
+using static TorchSharp.torch;
 using static TorchSharp.torchvision;
 using model = TorchSharp.torchvision.models;
 
-var device = MM.GetOpTimalDevice();
-torch.set_default_device(device);
+var defaultDeface = MM.GetOpTimalDevice();
+torch.set_default_device(defaultDeface);
+
+var resnet101 = model.resnet101(device: defaultDeface);
+
+MM.ReposityBase = MM.ModelScope;
+
+resnet101 = resnet101.LoadResnet101();
+resnet101.to(defaultDeface);
+resnet101.eval();
+
+var parameterCount = 0L;
+foreach (var item in resnet101.parameters())
+{
+    parameterCount += item.numel();
+}
+Console.WriteLine(parameterCount);
 
 var preprocess = transforms.Compose(
     transforms.Resize(256),
@@ -16,17 +32,13 @@ var preprocess = transforms.Compose(
 
 // 加载图形并缩放裁剪
 var img = MM.LoadImage("bobby.jpg");
+img.to(defaultDeface);
 
 // 使用转换函数处理图形
 img = preprocess.call(img);
 
 img = img.reshape(3, img.shape[2], img.shape[3]);
 var batch_t = torch.unsqueeze(img, 0);
-
-var resnet101 = model.resnet101(device: device);
-resnet101 = resnet101.LoadResnet101();
-resnet101.to(device);
-resnet101.eval();
 
 var @out = resnet101.call(batch_t);
 @out.print();
@@ -49,7 +61,7 @@ var (_, indices) = torch.sort(@out, descending: true);
 // 输出概率前五的物品名称
 for (int i = 0; i < 5; i++)
 {
-    Console.WriteLine("result:" + labels[(int)indices[0][i]] + ",chance:" + percentage[(int)indices[0][i]].item<float>().ToString());
+    Console.WriteLine("result:" + labels[(int)indices[0][i]] + ",chance:" + percentage[(int)indices[0][i]].item<float>().ToString() + "%");
 }
 
 var r = model.resnet152();
