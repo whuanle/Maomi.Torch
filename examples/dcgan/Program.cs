@@ -40,7 +40,7 @@ var dataset = MM.Datasets.ImageFolder(options.Dataroot, torchvision.transforms.C
     torchvision.transforms.Normalize(new double[] { 0.5, 0.5, 0.5 }, new double[] { 0.5, 0.5, 0.5 }))
 );
 
-var dataloader = torch.utils.data.DataLoader(dataset, batchSize: options.BatchSize, shuffle: true, num_worker: options.Workers);
+var dataloader = torch.utils.data.DataLoader(dataset, batchSize: options.BatchSize, shuffle: true, num_worker: options.Workers, device: defaultDevice);
 
 var netG = new dcgan.Generator(options).to(defaultDevice);
 netG.apply(weights_init);
