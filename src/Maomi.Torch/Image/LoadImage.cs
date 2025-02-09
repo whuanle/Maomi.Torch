@@ -135,6 +135,20 @@ public static partial class MM
     }
 
     /// <summary>
+    /// Batch load images and merge them into one Tensor.<br />
+    /// 批量加载图片并合并到一个 Tensor 中.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    public static Tensor LoadImagesCompose(IList<string>images,int channels = 3)
+    {
+        var list = LoadImages(images, channels).Select(x => x.squeeze(0));
+        var batchedTensor = torch.stack(list, dim: 0);
+        return batchedTensor;
+    }
+
+    /// <summary>
     /// Load the image and convert to Tensor.<br />
     /// 加载图片并转换为 Tensor.
     /// </summary>
@@ -175,6 +189,20 @@ public static partial class MM
         }
 
         return tensors.OrderBy(x => x.Key).Select(x => x.Value).ToArray();
+    }
+
+    /// <summary>
+    /// Batch load images and merge them into one Tensor.<br />
+    /// 批量加载图片并合并到一个 Tensor 中.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    public static Tensor LoadImagesFromUrlCompose(IList<string> images, int channels = 3)
+    {
+        var list = LoadImagesFromUrl(images, channels).Select(x => x.squeeze(0));
+        var batchedTensor = torch.stack(list, dim: 0);
+        return batchedTensor;
     }
 
     private static Tensor ImageToTensor(SKBitmap bitmap, int channels = 3)
@@ -231,7 +259,7 @@ public static partial class MM
         float[] flattenedData = new float[1 * height * width];
         Buffer.BlockCopy(floatData, 0, flattenedData, 0, flattenedData.Length * sizeof(float));
 
-        var tensor = torch.tensor(flattenedData, new long[] { 1, height, width });
+        var tensor = torch.tensor(flattenedData, new long[] { 1, 1, height, width });
 
         return tensor;
     }

@@ -59,45 +59,60 @@ public static partial class MM
         switch (imageTensor.dtype)
         {
             case torch.ScalarType.Byte:
-                ConvertTensorByte(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C); break;
+                ConvertImageFromTensorByte(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C, (int)N); break;
             case torch.ScalarType.Float32:
-                ConvertTensorFloat32(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C); break;
+                ConvertImageFromTensorFloat32(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C, (int)N); break;
             case torch.ScalarType.Float64:
-                ConvertTensorFloat64(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C); break;
+                ConvertImageFromTensorFloat64(imageTensor, filePath, imageFormat, (int)H, (int)W, (int)C, (int)N); break;
             default: throw new NotSupportedException($"Unsupported data types {imageTensor.dtype}");
         }
     }
 
-    private static void ConvertTensorByte(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels)
+    private static void ConvertImageFromTensorByte(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels, int batchSize = 1)
     {
         var flattenedData = imageTensor.data<byte>();
-        byte[,,] imageData = new byte[channels, height, width];
-        Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(byte));
+        float[,,,] allImageData = new float[batchSize, channels, height, width];
+        Buffer.BlockCopy(flattenedData.ToArray(), 0, allImageData, 0, (int)flattenedData.Count * sizeof(byte));
 
-        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        // 计算合适的行和列数量
+        int sqrt = (int)Math.Ceiling(Math.Sqrt(batchSize));
+        int rows = sqrt;
+        int cols = (int)Math.Ceiling(batchSize / (double)rows);
+
+        // 计算拼接后的总宽度和总高度
+        int totalWidth = width * cols;
+        int totalHeight = height * rows;
+
+        using (var bitmap = new SKBitmap(totalWidth, totalHeight, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
-            for (int y = 0; y < height; y++)
+            for (int i = 0; i < batchSize; i++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    byte r, g, b;
-                    if (channels == 1)
-                    {
-                        // 处理灰度图像
-                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
-                        r = gray;
-                        g = gray;
-                        b = gray;
-                    }
-                    else
-                    {
-                        r = (byte)(imageData[0, y, x] * 255.0f);
-                        g = (byte)(imageData[1, y, x] * 255.0f);
-                        b = (byte)(imageData[2, y, x] * 255.0f);
-                    }
+                int row = i / cols;
+                int col = i % cols;
 
-                    var color = new SKColor(r, g, b);
-                    bitmap.SetPixel(x, y, color);
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte r, g, b;
+                        if (channels == 1)
+                        {
+                            // 处理灰度图像
+                            byte gray = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            r = gray;
+                            g = gray;
+                            b = gray;
+                        }
+                        else
+                        {
+                            r = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            g = (byte)(allImageData[i, 1, y, x] * 255.0f);
+                            b = (byte)(allImageData[i, 2, y, x] * 255.0f);
+                        }
+
+                        var color = new SKColor(r, g, b);
+                        bitmap.SetPixel(x + col * width, y + row * height, color);  // 按照矩形布局排列图像
+                    }
                 }
             }
 
@@ -112,36 +127,51 @@ public static partial class MM
         }
     }
 
-    private static void ConvertTensorFloat32(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels)
+    private static void ConvertImageFromTensorFloat32(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels, int batchSize = 1)
     {
         var flattenedData = imageTensor.data<float>();
-        float[,,] imageData = new float[channels, height, width];
-        Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(float));
+        float[,,,] allImageData = new float[batchSize, channels, height, width];
+        Buffer.BlockCopy(flattenedData.ToArray(), 0, allImageData, 0, (int)flattenedData.Count * sizeof(float));
 
-        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        // 计算合适的行和列数量
+        int sqrt = (int)Math.Ceiling(Math.Sqrt(batchSize));
+        int rows = sqrt;
+        int cols = (int)Math.Ceiling(batchSize / (double)rows);
+
+        // 计算拼接后的总宽度和总高度
+        int totalWidth = width * cols;
+        int totalHeight = height * rows;
+
+        using (var bitmap = new SKBitmap(totalWidth, totalHeight, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
-            for (int y = 0; y < height; y++)
+            for (int i = 0; i < batchSize; i++)
             {
-                for (int x = 0; x < width; x++)
-                {
-                    byte r, g, b;
-                    if (channels == 1)
-                    {
-                        // 处理灰度图像
-                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
-                        r = gray;
-                        g = gray;
-                        b = gray;
-                    }
-                    else
-                    {
-                        r = (byte)(imageData[0, y, x] * 255.0f);
-                        g = (byte)(imageData[1, y, x] * 255.0f);
-                        b = (byte)(imageData[2, y, x] * 255.0f);
-                    }
+                int row = i / cols;
+                int col = i % cols;
 
-                    var color = new SKColor(r, g, b);
-                    bitmap.SetPixel(x, y, color);
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        byte r, g, b;
+                        if (channels == 1)
+                        {
+                            // 处理灰度图像
+                            byte gray = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            r = gray;
+                            g = gray;
+                            b = gray;
+                        }
+                        else
+                        {
+                            r = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            g = (byte)(allImageData[i, 1, y, x] * 255.0f);
+                            b = (byte)(allImageData[i, 2, y, x] * 255.0f);
+                        }
+
+                        var color = new SKColor(r, g, b);
+                        bitmap.SetPixel(x + col * width, y + row * height, color);  // 按照矩形布局排列图像
+                    }
                 }
             }
 
@@ -156,37 +186,51 @@ public static partial class MM
         }
     }
 
-    private static void ConvertTensorFloat64(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels)
+    private static void ConvertImageFromTensorFloat64(Tensor imageTensor, string filePath, SKEncodedImageFormat imageFormat, int height, int width, int channels, int batchSize = 1)
     {
         var flattenedData = imageTensor.data<double>();
-        double[,,] imageData = new double[channels, height, width];
-        Buffer.BlockCopy(flattenedData.ToArray(), 0, imageData, 0, (int)flattenedData.Count * sizeof(double));
+        float[,,,] allImageData = new float[batchSize, channels, height, width];
+        Buffer.BlockCopy(flattenedData.ToArray(), 0, allImageData, 0, (int)flattenedData.Count * sizeof(float));
 
-        using (var bitmap = new SKBitmap(width, height, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
+        // 计算合适的行和列数量
+        int sqrt = (int)Math.Ceiling(Math.Sqrt(batchSize));
+        int rows = sqrt;
+        int cols = (int)Math.Ceiling(batchSize / (double)rows);
+
+        // 计算拼接后的总宽度和总高度
+        int totalWidth = width * cols;
+        int totalHeight = height * rows;
+
+        using (var bitmap = new SKBitmap(totalWidth, totalHeight, channels == 1 ? SKColorType.Gray8 : SKColorType.Bgra8888, SKAlphaType.Unpremul))
         {
-            for (int y = 0; y < height; y++)
+            for (int i = 0; i < batchSize; i++)
             {
-                for (int x = 0; x < width; x++)
+                int row = i / cols;
+                int col = i % cols;
+
+                for (int y = 0; y < height; y++)
                 {
-                    byte r, g, b;
-                    if (channels == 1)
+                    for (int x = 0; x < width; x++)
                     {
-                        // 处理灰度图像
-                        byte gray = (byte)(imageData[0, y, x] * 255.0f);
-                        r = gray;
-                        g = gray;
-                        b = gray;
-                    }
-                    else
-                    {
-                        r = (byte)(imageData[0, y, x] * 255.0f);
-                        g = (byte)(imageData[1, y, x] * 255.0f);
-                        b = (byte)(imageData[2, y, x] * 255.0f);
-                    }
+                        byte r, g, b;
+                        if (channels == 1)
+                        {
+                            // 处理灰度图像
+                            byte gray = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            r = gray;
+                            g = gray;
+                            b = gray;
+                        }
+                        else
+                        {
+                            r = (byte)(allImageData[i, 0, y, x] * 255.0f);
+                            g = (byte)(allImageData[i, 1, y, x] * 255.0f);
+                            b = (byte)(allImageData[i, 2, y, x] * 255.0f);
+                        }
 
-
-                    var color = new SKColor(r, g, b);
-                    bitmap.SetPixel(x, y, color);
+                        var color = new SKColor(r, g, b);
+                        bitmap.SetPixel(x + col * width, y + row * height, color);  // 按照矩形布局排列图像
+                    }
                 }
             }
 

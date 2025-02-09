@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maomi.Torch.Tests", "src\Ma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example2.4", "examples\example2.4\example2.4.csproj", "{C95076D7-A357-4194-A7EC-748745976935}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dcgan", "examples\dcgan\dcgan.csproj", "{535B3111-1DD1-4303-A0EA-867E99F8006B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{C95076D7-A357-4194-A7EC-748745976935}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C95076D7-A357-4194-A7EC-748745976935}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C95076D7-A357-4194-A7EC-748745976935}.Release|Any CPU.Build.0 = Release|Any CPU
+		{535B3111-1DD1-4303-A0EA-867E99F8006B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{535B3111-1DD1-4303-A0EA-867E99F8006B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{535B3111-1DD1-4303-A0EA-867E99F8006B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{535B3111-1DD1-4303-A0EA-867E99F8006B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{13FF0C95-96BB-40E1-8DBC-8340E6B18593} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 		{F31BA131-482C-487F-9CEC-4EE8BC27EC82} = {9A87C325-8362-4AE9-B9D9-A8141A93CB24}
 		{C95076D7-A357-4194-A7EC-748745976935} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
+		{535B3111-1DD1-4303-A0EA-867E99F8006B} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {37F4B8D2-B0BE-4FB5-A586-042A8F3BA54E}

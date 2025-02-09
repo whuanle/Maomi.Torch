@@ -47,57 +47,57 @@ var learning_rate = 0.001;
 // 优化器
 var optimizer = optim.Adam(model.parameters(), lr: learning_rate);
 
-//// 训练的轮数
-//var num_epochs = 10;
+// 训练的轮数
+var num_epochs = 10;
 
-//foreach (var epoch in Enumerable.Range(0, num_epochs))
-//{
-//    model.train();
-//    int i = 0;
-//    foreach (var item in train_loader)
-//    {
-//        var images = item["data"];
-//        var lables = item["label"];
+foreach (var epoch in Enumerable.Range(0, num_epochs))
+{
+    model.train();
+    int i = 0;
+    foreach (var item in train_loader)
+    {
+        var images = item["data"];
+        var lables = item["label"];
 
-//        images = images.reshape(-1, 28 * 28);
-//        var outputs = model.call(images);
+        images = images.reshape(-1, 28 * 28);
+        var outputs = model.call(images);
 
-//        var loss = criterion.call(outputs, lables);
+        var loss = criterion.call(outputs, lables);
 
-//        optimizer.zero_grad();
+        optimizer.zero_grad();
 
-//        loss.backward();
+        loss.backward();
 
-//        optimizer.step();
+        optimizer.step();
 
-//        i++;
-//        if ((i + 1) % 300 == 0)
-//        {
-//            Console.WriteLine($"Epoch [{(epoch + 1)}/{num_epochs}], Step [{(i + 1)}/{train_data.Count / batch_size}], Loss: {loss.ToSingle():F4}");
-//        }
-//    }
+        i++;
+        if ((i + 1) % 300 == 0)
+        {
+            Console.WriteLine($"Epoch [{(epoch + 1)}/{num_epochs}], Step [{(i + 1)}/{train_data.Count / batch_size}], Loss: {loss.ToSingle():F4}");
+        }
+    }
 
-//    model.eval();
-//    using (torch.no_grad())
-//    {
-//        long correct = 0;
-//        long total = 0;
+    model.eval();
+    using (torch.no_grad())
+    {
+        long correct = 0;
+        long total = 0;
 
-//        foreach (var item in test_loader)
-//        {
-//            var images = item["data"];
-//            var labels = item["label"];
+        foreach (var item in test_loader)
+        {
+            var images = item["data"];
+            var labels = item["label"];
 
-//            images = images.reshape(-1, 28 * 28);
-//            var outputs = model.call(images);
+            images = images.reshape(-1, 28 * 28);
+            var outputs = model.call(images);
 
-//            var (_, predicted) = torch.max(outputs, 1);
-//            total += labels.size(0);
-//            correct += (predicted == labels).sum().item<long>();
-//        }
-//        Console.WriteLine($"Accuracy of the network on the 10000 test images: {100 * correct / total} %");
-//    }
-//}
+            var (_, predicted) = torch.max(outputs, 1);
+            total += labels.size(0);
+            correct += (predicted == labels).sum().item<long>();
+        }
+        Console.WriteLine($"Accuracy of the network on the 10000 test images: {100 * correct / total} %");
+    }
+}
 
 //model.save("mnist_mlp_model.dat");
 model.load("mnist_mlp_model.dat");
