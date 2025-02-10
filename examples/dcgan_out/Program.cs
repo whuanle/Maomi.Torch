@@ -24,7 +24,8 @@ Options options = new Options()
 };
 
 var netG = new dcgan.Generator(options);
-netG.load("netG_epoch_24.pth");
+netG.to(defaultDevice);
+netG.load("netg.dat");
 
 // 生成随机噪声
 var fixed_noise = torch.randn(64, options.Nz, 1, 1, device: defaultDevice);
@@ -32,4 +33,4 @@ var fixed_noise = torch.randn(64, options.Nz, 1, 1, device: defaultDevice);
 // 生成图像
 var fake_images = netG.call(fixed_noise);
 
-fake_images.SavePng("fake_images.png");
+fake_images.SaveJpeg("fake_images.jpg");
