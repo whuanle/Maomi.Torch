@@ -25,7 +25,7 @@ public class LoadImageTests
         sourceImg.SavePng(imagePath);
         var tensor = MM.LoadImage(imagePath);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 3, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 3, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class LoadImageTests
         using var stream = File.OpenRead(imagePath);
         var tensor = MM.LoadImage(stream);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 3, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 3, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class LoadImageTests
         sourceImg.SavePng(imagePath);
         var tensor = MM.LoadImage(imagePath, channels: 1);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 1, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 1, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class LoadImageTests
         using var stream = File.OpenRead(imagePath);
         var tensor = MM.LoadImage(stream, channels: 1);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 1, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 1, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class LoadImageTests
         sourceImg.SavePng(imagePath);
         var tensor = MM.LoadImage(imagePath, channels: 3);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 3, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 3, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -90,7 +90,7 @@ public class LoadImageTests
         using var stream = File.OpenRead(imagePath);
         var tensor = MM.LoadImage(stream, channels: 3);
         Assert.NotNull(tensor);
-        Assert.Equal(new long[] { 1, 3, 1280, 720 }, tensor.shape);
+        Assert.Equal(new long[] { 3, 1280, 720 }, tensor.shape);
     }
 
     [Fact]
@@ -110,7 +110,7 @@ public class LoadImageTests
         foreach (var tensor in tensors)
         {
             Assert.NotNull(tensor);
-            Assert.Equal(new long[] { 1, 3, 1280, 720 }, tensor.shape);
+            Assert.Equal(new long[] { 3, 1280, 720 }, tensor.shape);
         }
     }
 

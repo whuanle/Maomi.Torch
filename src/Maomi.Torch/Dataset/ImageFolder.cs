@@ -1,6 +1,10 @@
-﻿using TorchSharp;
+﻿using SkiaSharp;
+using System.Linq.Expressions;
+using System.Reflection;
+using TorchSharp;
 using static TorchSharp.torch;
 using static TorchSharp.torchvision;
+using static TorchSharp.torchvision.io;
 
 namespace Maomi.Torch;
 
@@ -32,7 +36,7 @@ public class ImageFolderDataset : torch.utils.data.IterableDataset
         class_to_idx = new Dictionary<string, int>();
         classes = new List<string>();
         imgs = new();
-        
+
         for (int classIndex = 0; classIndex < dirs.Length; classIndex++)
         {
             var classPath = dirs[classIndex];
@@ -59,12 +63,13 @@ public class ImageFolderDataset : torch.utils.data.IterableDataset
     {
         List<Tensor> tensors = new List<Tensor>();
         var item = imgs[(int)index];
-        using var stream = File.OpenRead(item.Item1);
-        Tensor? tensor = new torchvision.io.SkiaImager().DecodeImage(stream);
-        tensor = tensor.reshape(1, tensor.shape[0], tensor.shape[1], tensor.shape[2]);
+        Tensor? tensor = MM.LoadImage(item.Item1);
+
+        var lstIdx = tensor.shape.Length;
+        tensor = tensor.reshape(1, tensor.shape[lstIdx - 3], tensor.shape[lstIdx - 2], tensor.shape[lstIdx - 1]);
         if (transform is not null)
         {
-            tensor =  transform.call(tensor);
+            tensor = transform.call(tensor);
         }
         tensor = tensor.squeeze(0);
 
@@ -87,8 +92,65 @@ public static partial class MM
         /// <returns></returns>
         public static torch.utils.data.IterableDataset ImageFolder(string rootPath, ITransform target_transform = null!)
         {
-            var datasets =  new ImageFolderDataset(rootPath, target_transform);
+            var datasets = new ImageFolderDataset(rootPath, target_transform);
             return datasets;
         }
+    }
+}
+
+public static partial class MM
+{
+    /// <summary>
+    /// torchvision.io.SkiaImager.ToTensor.
+    /// </summary>
+    /// <param name="mode"></param>
+    /// <param name="bitmap"></param>
+    /// <returns></returns>
+    public delegate Tensor SkiaImagerToTensor(ImageReadMode mode, SKBitmap bitmap);
+
+    /// <summary>
+    /// torchvision.io.SkiaImager.ToTensor.
+    /// </summary>
+    public static SkiaImagerToTensor ToTensor;
+    static MM()
+    {
+        ToTensor = BuildSkiaImagerToTensor();
+    }
+
+    private static SkiaImagerToTensor BuildSkiaImagerToTensor()
+    {
+        MethodInfo? toTensorMethod = typeof(torchvision.io.SkiaImager)
+            .GetMethod("ToTensor", BindingFlags.NonPublic | BindingFlags.Static);
+
+        if (toTensorMethod == null)
+        {
+            ArgumentNullException.ThrowIfNull(toTensorMethod, nameof(toTensorMethod));
+        }
+
+        /*
+                 MethodInfo? toTensorMethod = typeof(torchvision.io.SkiaImager)
+    .GetMethod("ToTensor", BindingFlags.NonPublic | BindingFlags.Static);
+        var d = toTensorMethod.Invoke(null, new object[] { isTransparent ? torchvision.io.ImageReadMode.RGB : torchvision.io.ImageReadMode.RGB_ALPHA, bitmap });
+
+         */
+
+        ParameterExpression modeParameter = Expression.Parameter(typeof(ImageReadMode), "mode");
+        ParameterExpression bitmapParameter = Expression.Parameter(typeof(SKBitmap), "bitmap");
+
+        var arguments = new ParameterExpression[] { modeParameter, bitmapParameter };
+
+        MethodCallExpression methodCall = Expression.Call(
+            instance: null,
+            method: toTensorMethod,
+            arguments: arguments
+        );
+
+        Expression<SkiaImagerToTensor> lambda = Expression.Lambda<SkiaImagerToTensor>(
+            methodCall,
+            parameters: arguments
+        );
+
+        SkiaImagerToTensor tensorDelegate = lambda.Compile();
+        return tensorDelegate;
     }
 }

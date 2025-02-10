@@ -1,5 +1,6 @@
 ﻿using SkiaSharp;
 using System.Collections.Concurrent;
+using System.Reflection;
 using TorchSharp;
 using static TorchSharp.torch;
 
@@ -16,7 +17,7 @@ public static partial class MM
     /// 加载图片并转换为 Tensor.
     /// </summary>
     /// <param name="imagePath">Picture path.</param>
-    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <param name="channels">Number of image channels, default is 1、3、4.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     public static Tensor LoadImage(string imagePath, int channels = 3)
@@ -29,14 +30,8 @@ public static partial class MM
 
                 return tensorImg;
             }
-            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
-            {
-                var tensorImg = ImageToTensor(bitmap, channels);
-                return tensorImg;
-            }
 
-            throw new InvalidOperationException("Expected color type.");
-
+            return ImageToTensor(bitmap, channels);
         }
     }
 
@@ -58,13 +53,8 @@ public static partial class MM
 
                 return tensorImg;
             }
-            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
-            {
-                var tensorImg = ImageToTensor(bitmap, channels);
-                return tensorImg;
-            }
 
-            throw new InvalidOperationException("Expected color type.");
+            return ImageToTensor(bitmap, channels);
         }
     }
 
@@ -80,22 +70,7 @@ public static partial class MM
     {
         using HttpClient httpClient = new();
         var stream = await httpClient.GetStreamAsync(url);
-        using (SKBitmap bitmap = SKBitmap.Decode(stream))
-        {
-            if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
-            {
-                var tensorImg = ImageToGrayTensor(bitmap);
-
-                return tensorImg;
-            }
-            else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
-            {
-                var tensorImg = ImageToTensor(bitmap, channels);
-                return tensorImg;
-            }
-
-            throw new InvalidOperationException("Expected color type.");
-        }
+        return LoadImage(stream, channels);
     }
 
     /// <summary>
@@ -111,24 +86,8 @@ public static partial class MM
         List<Tensor> tensors = new List<Tensor>();
         foreach (var imagePath in images)
         {
-            using (SKBitmap bitmap = SKBitmap.Decode(imagePath))
-            {
-                Tensor? tensorImg = default;
-                if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
-                {
-                    tensorImg = ImageToGrayTensor(bitmap);
-                    tensors.Add(tensorImg);
-                }
-                else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
-                {
-                     tensorImg = ImageToTensor(bitmap, channels);
-                    tensors.Add(tensorImg);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Expected color type.");
-                }
-            }
+            Tensor? tensorImg = LoadImage(imagePath, channels);
+            tensors.Add(tensorImg);
         }
 
         return tensors;
@@ -141,7 +100,7 @@ public static partial class MM
     /// <param name="images">Picture path.</param>
     /// <param name="channels">Number of image channels, default is 3.</param>
     /// <returns></returns>
-    public static Tensor LoadImagesCompose(IList<string>images,int channels = 3)
+    public static Tensor LoadImagesCompose(IList<string> images, int channels = 3)
     {
         var list = LoadImages(images, channels).Select(x => x.squeeze(0));
         var batchedTensor = torch.stack(list, dim: 0);
@@ -158,32 +117,17 @@ public static partial class MM
     /// <exception cref="InvalidOperationException"></exception>
     public static Tensor[] LoadImagesFromUrl(IList<string> images, int channels = 3)
     {
-        ConcurrentDictionary<int,Tensor> tensors = new ConcurrentDictionary<int,Tensor>();
+        ConcurrentDictionary<int, Tensor> tensors = new ConcurrentDictionary<int, Tensor>();
         using HttpClient httpClient = new();
 
-        Action<int,HttpClient,string> func = async (index, httpClient, url) =>
+        Action<int, HttpClient, string> func = async (index, httpClient, url) =>
         {
-            var stream = await httpClient.GetStreamAsync(url);
-            using (SKBitmap bitmap = SKBitmap.Decode(stream))
-            {
-                Tensor? tensorImg = default;
-                if (bitmap.ColorType == SKColorType.Gray8 || channels == 1)
-                {
-                    tensorImg = ImageToGrayTensor(bitmap);
-                }
-                else if (bitmap.ColorType == SKColorType.Bgra8888 || bitmap.ColorType == SKColorType.Rgba8888)
-                {
-                    tensorImg = ImageToTensor(bitmap, channels);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Expected color type.");
-                }
-                tensors[index] = tensorImg;
-            }
+            using var stream = await httpClient.GetStreamAsync(url);
+            Tensor? tensorImg = LoadImage(stream, channels);
+            tensors[index] = tensorImg;
         };
 
-        for(int i=0;i<images.Count; i++)
+        for (int i = 0; i < images.Count; i++)
         {
             func(i, httpClient, images[i]);
         }
@@ -207,60 +151,26 @@ public static partial class MM
 
     private static Tensor ImageToTensor(SKBitmap bitmap, int channels = 3)
     {
-        int width = bitmap.Width;
-        int height = bitmap.Height;
-
-        float[,,] floatData = new float[channels, height, width];
-
-        for (int y = 0; y < height; y++)
+        // 图像是灰色的，但以 channels = 3 方式加载
+        if (bitmap.ColorType == SKColorType.Gray8)
         {
-            for (int x = 0; x < width; x++)
-            {
-                SKColor color = bitmap.GetPixel(x, y);
-
-                floatData[0, y, x] = color.Red / 255.0f; // Red channel
-                floatData[1, y, x] = color.Green / 255.0f; // Green channel
-                floatData[2, y, x] = color.Blue / 255.0f; // Blue channel
-            }
+            Tensor t = torch.tensor(bitmap.Bytes, 1, bitmap.Height, bitmap.Width);
+            return t.expand(3, bitmap.Height, bitmap.Width).MoveToOuterDisposeScope();
         }
 
-        // Convert a multidimensional array to a one-dimensional array (for tensor creation).
-        // 将多维数组转换为一维数组（为了进行张量创建）.
-        float[] flattenedData = new float[channels * height * width];
-        Buffer.BlockCopy(floatData, 0, flattenedData, 0, flattenedData.Length * sizeof(float));
+        bool isTransparent = channels == 4;
 
-        var tensor = torch.tensor(flattenedData, new long[] { 1, channels, height, width });
-
-        return tensor;
+        return MM.ToTensor(isTransparent ? torchvision.io.ImageReadMode.RGB_ALPHA : torchvision.io.ImageReadMode.RGB, bitmap);
     }
 
     private static Tensor ImageToGrayTensor(SKBitmap bitmap)
     {
-        int width = bitmap.Width;
-        int height = bitmap.Height;
-
-        float[,,] floatData = new float[1, height, width];
-
-        for (int y = 0; y < height; y++)
+        if (bitmap.ColorType == SKColorType.Gray8)
         {
-            for (int x = 0; x < width; x++)
-            {
-                SKColor color = bitmap.GetPixel(x, y);
-
-                // Convert to grayscale using a standard formula
-                // 将彩色图像转换为灰度值（标准加权法）
-                float gray = (0.299f * color.Red + 0.587f * color.Green + 0.114f * color.Blue) / 255.0f;
-                floatData[0, y, x] = gray;
-            }
+            return torch.tensor(bitmap.Bytes, 1, bitmap.Height, bitmap.Width);
         }
 
-        // Convert a multidimensional array to a one-dimensional array (for tensor creation).
-        // 将多维数组转换为一维数组（为了进行张量创建）.
-        float[] flattenedData = new float[1 * height * width];
-        Buffer.BlockCopy(floatData, 0, flattenedData, 0, flattenedData.Length * sizeof(float));
-
-        var tensor = torch.tensor(flattenedData, new long[] { 1, 1, height, width });
-
-        return tensor;
+        // RGB，但是使用 channel = 1
+        return torchvision.transforms.Grayscale().call(torch.tensor(bitmap.Bytes, 1, bitmap.Height, bitmap.Width));
     }
 }

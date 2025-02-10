@@ -1,5 +1,4 @@
 using TorchSharp;
-using static TorchSharp.torch;
 
 namespace Maomi.Torch.Tests;
 
