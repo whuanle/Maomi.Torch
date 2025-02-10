@@ -9,6 +9,8 @@ using static TorchSharp.torch;
 Device defaultDevice = MM.GetOpTimalDevice();
 torch.set_default_device(defaultDevice);
 
+torchvision.io.DefaultImager = new torchvision.io.SkiaImager();
+
 // Set random seed for reproducibility
 var manualSeed = 999;
 
@@ -16,7 +18,6 @@ var manualSeed = 999;
 Console.WriteLine("Random Seed:" + manualSeed);
 random.manual_seed(manualSeed);
 torch.manual_seed(manualSeed);
-
 
 Options options = new Options()
 {
@@ -70,10 +71,10 @@ int i = 0;
 // For each epoch
 for (int epoch = 0; epoch < options.NumEpochs; epoch++)
 {
-    // For each batch in the dataloader
     foreach (var item in dataloader)
     {
         var data = item[0];
+        //torchvision.utils.save_image(data, "bbb.jpg", torchvision.ImageFormat.Jpeg);
 
         netD.zero_grad();
         // Format batch
@@ -127,9 +128,13 @@ for (int epoch = 0; epoch < options.NumEpochs; epoch++)
         // 每处理 100 批，输出一次图片效果
         if (i % 100 == 0)
         {
-            real_cpu.SavePng("samples/real_samples.png");
+            torchvision.utils.save_image(real_cpu, "samples/real_samples.png", torchvision.ImageFormat.Jpeg);
+
+            //real_cpu.SavePng("samples/real_samples.jpg");
             fake = netG.call(fixed_noise);
-            real_cpu.SavePng($"samples/fake_samples_epoch_{epoch:D3}.png");
+            //real_cpu.SavePng($"samples/fake_samples_epoch_{epoch:D3}.png");
+            torchvision.utils.save_image(real_cpu, $"samples/fake_samples_epoch_{epoch:D3}.jpg", torchvision.ImageFormat.Jpeg);
+
         }
 
         i++;

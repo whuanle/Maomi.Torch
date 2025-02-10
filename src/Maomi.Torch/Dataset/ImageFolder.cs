@@ -59,24 +59,16 @@ public class ImageFolderDataset : torch.utils.data.IterableDataset
     {
         List<Tensor> tensors = new List<Tensor>();
         var item = imgs[(int)index];
-        Tensor? tensor = MM.LoadImage(item.Item1);
-
-        var shape0 = tensor.shape[1];
-        var shape1 = tensor.shape[2];
-        var shape2 = tensor.shape[3];
-
+        using var stream = File.OpenRead(item.Item1);
+        Tensor? tensor = new torchvision.io.SkiaImager().DecodeImage(stream);
+        tensor = tensor.reshape(1, tensor.shape[0], tensor.shape[1], tensor.shape[2]);
         if (transform is not null)
         {
-            tensors.Insert(0, transform.call(
-                tensor
-                .unsqueeze(0).reshape(shape0, shape1, shape2)
-                .unsqueeze(0)
-                ).squeeze(0));
+            tensor =  transform.call(tensor);
         }
-        else
-        {
-            tensors.Insert(0, tensor.unsqueeze(0));
-        }
+        tensor = tensor.squeeze(0);
+
+        tensors.Insert(0, tensor);
         tensors.Insert(1, index);
 
         return tensors;
