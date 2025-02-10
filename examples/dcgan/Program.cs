@@ -20,9 +20,10 @@ torch.manual_seed(manualSeed);
 Options options = new Options()
 {
     Dataroot = "E:\\datasets\\celeba",
-    // Windows 下要设置这个，否则会报错
-    Workers = 0,
+    // 设置这个可以并发加载数据集，加快训练速度
+    Workers = 10,
     BatchSize = 128,
+    NumEpochs = 25
 };
 
 if(Directory.Exists("samples"))
@@ -72,7 +73,6 @@ for (int epoch = 0; epoch < options.NumEpochs; epoch++)
     foreach (var item in dataloader)
     {
         var data = item[0];
-        data.SaveJpeg($"samples/test_{i}.jpg");
 
         netD.zero_grad();
         // Format batch
@@ -128,7 +128,7 @@ for (int epoch = 0; epoch < options.NumEpochs; epoch++)
         {
             real_cpu.SaveJpeg("samples/real_samples.jpg");
             fake = netG.call(fixed_noise);
-            real_cpu.SaveJpeg($"samples/fake_samples_epoch_{epoch:D3}.png");
+            fake.detach().SaveJpeg($"samples/fake_samples_epoch_{epoch:D3}.jpg");
         }
 
         i++;

@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dcgan", "examples\dcgan\dcg
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dcgan_out", "examples\dcgan_out\dcgan_out.csproj", "{B6DD263F-0D96-4FA6-8734-365004E68E8A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PennFudanPed", "examples\PennFudanPed\PennFudanPed.csproj", "{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{B6DD263F-0D96-4FA6-8734-365004E68E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6DD263F-0D96-4FA6-8734-365004E68E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6DD263F-0D96-4FA6-8734-365004E68E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{C95076D7-A357-4194-A7EC-748745976935} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 		{535B3111-1DD1-4303-A0EA-867E99F8006B} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 		{B6DD263F-0D96-4FA6-8734-365004E68E8A} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
+		{1B2F3C32-56E4-48F2-9CE4-008318BDB6D4} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {37F4B8D2-B0BE-4FB5-A586-042A8F3BA54E}

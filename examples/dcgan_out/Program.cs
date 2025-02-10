@@ -18,8 +18,7 @@ torch.manual_seed(manualSeed);
 Options options = new Options()
 {
     Dataroot = "E:\\datasets\\celeba",
-    // Windows 下要设置这个，否则会报错
-    Workers = 0,
+    Workers = 10,
     BatchSize = 128,
 };
 
