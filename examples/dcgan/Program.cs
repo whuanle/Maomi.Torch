@@ -72,7 +72,7 @@ for (int epoch = 0; epoch < options.NumEpochs; epoch++)
 {
     foreach (var item in dataloader)
     {
-        var data = item[0];
+        var data = item["data"];
 
         netD.zero_grad();
         // Format batch

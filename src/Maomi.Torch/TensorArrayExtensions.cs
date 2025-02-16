@@ -45,7 +45,7 @@ public static partial class MM
             case torch.ScalarType.Bool:
                 return Unsafe.As<T[]>(ToBoolArray(tensor));
             case torch.ScalarType.BFloat16:
-                return Unsafe.As<T[]>(ToBfloat16Array(tensor));
+                throw new NotSupportedException("No support for BFloat16 in TorchSharp");//return Unsafe.As<T[]>(ToBfloat16Array(tensor));
         }
 
         throw new NotSupportedException($"Unsupported data type {tensor.dtype}");

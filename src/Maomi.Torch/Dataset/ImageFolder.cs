@@ -11,7 +11,7 @@ namespace Maomi.Torch;
 /// <summary>
 /// A generic data loader where the images are arranged in this way by default.
 /// </summary>
-public class ImageFolderDataset : torch.utils.data.IterableDataset
+public class ImageFolderDataset : torch.utils.data.Dataset
 {
     static readonly string[] extensions = new string[] { ".jpg", ".jpeg", ".png", ".ppm", ".bmp", ".pgm", ".tif", ".tiff", ".webp" };
 
@@ -40,7 +40,7 @@ public class ImageFolderDataset : torch.utils.data.IterableDataset
         for (int classIndex = 0; classIndex < dirs.Length; classIndex++)
         {
             var classPath = dirs[classIndex];
-            var className = Path.GetDirectoryName(classPath)!;
+            var className = Path.GetFileName(classPath)!;
             classes.Add(className);
             class_to_idx.Add(className, classIndex);
 
@@ -59,22 +59,22 @@ public class ImageFolderDataset : torch.utils.data.IterableDataset
     public override long Count => imgs.Count;
 
     /// <inheritdoc/>
-    public override IList<Tensor> GetTensor(long index)
+    public override Dictionary<string, Tensor> GetTensor(long index)
     {
-        List<Tensor> tensors = new List<Tensor>();
+        Dictionary<string, Tensor> tensors = new();
         var item = imgs[(int)index];
         Tensor? tensor = MM.LoadImage(item.Item1);
 
-        var lstIdx = tensor.shape.Length;
-        tensor = tensor.reshape(1, tensor.shape[lstIdx - 3], tensor.shape[lstIdx - 2], tensor.shape[lstIdx - 1]);
+        //var lstIdx = tensor.shape.Length;
+        //tensor = tensor.reshape(1, tensor.shape[lstIdx - 3], tensor.shape[lstIdx - 2], tensor.shape[lstIdx - 1]);
         if (transform is not null)
         {
             tensor = transform.call(tensor);
         }
-        tensor = tensor.squeeze(0);
+        //tensor = tensor.squeeze(0);
 
-        tensors.Insert(0, tensor);
-        tensors.Insert(1, index);
+        tensors["data"] = tensor;
+        tensors["label"] = torch.tensor(item.Item2, ScalarType.Int64);
 
         return tensors;
     }
@@ -87,12 +87,12 @@ public static partial class MM
         /// <summary>
         /// A generic data loader where the images are arranged in this way by default.
         /// </summary>
-        /// <param name="rootPath"></param>
+        /// <param name="root"></param>
         /// <param name="target_transform"></param>
         /// <returns></returns>
-        public static torch.utils.data.IterableDataset ImageFolder(string rootPath, ITransform target_transform = null!)
+        public static torch.utils.data.Dataset ImageFolder(string root, ITransform target_transform = null!)
         {
-            var datasets = new ImageFolderDataset(rootPath, target_transform);
+            var datasets = new ImageFolderDataset(root, target_transform);
             return datasets;
         }
     }

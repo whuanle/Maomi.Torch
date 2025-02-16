@@ -8,8 +8,8 @@
 		<RootNamespace>Maomi.Torch</RootNamespace>
 
 		<IsPackable>true</IsPackable>
-		<PackageVersion>0.0.6</PackageVersion>
-		<Title>Maomi.Torch</Title>
+		<PackageVersion>0.0.5</PackageVersion>
+		<Title>Maomi.Torch.Detection</Title>
 		<Description>
 			C# Pytorch 深度学习框架扩展包.
 		</Description>
@@ -30,7 +30,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="package.png" Pack="true" PackagePath="\" />
+		<None Include="package.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -42,10 +42,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="TorchSharp" Version="0.103.1" />
-		<PackageReference Include="TorchVision" Version="0.103.1" />
-		<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+	  <ProjectReference Include="..\Maomi.Torch\Maomi.Torch.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 </Project>
