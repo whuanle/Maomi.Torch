@@ -8,7 +8,7 @@ using static TorchSharp.torch.distributions.transforms;
 using static TorchSharp.torch.optim;
 
 // 使用 GPU 启动
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 var train_dataset = datasets.CIFAR10(root: "E:/datasets/CIFAR-10", train: true, download: true);

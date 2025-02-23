@@ -3,7 +3,7 @@ using Maomi.Torch;
 using TorchSharp;
 using static TorchSharp.torch;
 
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 // Set random seed for reproducibility

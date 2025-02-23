@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "exportdataset", "examples\e
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Maomi.Torch.Detection", "src\Maomi.Torch.Detection\Maomi.Torch.Detection.csproj", "{0EDFBD6B-0872-4CF2-95D0-53D9F07D08D3}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "model", "src\model\model.pyproj", "{1CEDCBD1-F456-437D-9BE9-EF9C2AFD53DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,8 @@ Global
 		{0EDFBD6B-0872-4CF2-95D0-53D9F07D08D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EDFBD6B-0872-4CF2-95D0-53D9F07D08D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EDFBD6B-0872-4CF2-95D0-53D9F07D08D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CEDCBD1-F456-437D-9BE9-EF9C2AFD53DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CEDCBD1-F456-437D-9BE9-EF9C2AFD53DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,6 +113,7 @@ Global
 		{37EE5A9C-48F1-491D-8141-2FF0D9EDC4DC} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 		{290E9F05-063D-4067-8963-B902286FFD6D} = {4CCEC2E0-F0FD-4FD1-A100-948F0E295109}
 		{0EDFBD6B-0872-4CF2-95D0-53D9F07D08D3} = {9A87C325-8362-4AE9-B9D9-A8141A93CB24}
+		{1CEDCBD1-F456-437D-9BE9-EF9C2AFD53DC} = {9A87C325-8362-4AE9-B9D9-A8141A93CB24}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {37F4B8D2-B0BE-4FB5-A586-042A8F3BA54E}

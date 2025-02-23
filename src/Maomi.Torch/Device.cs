@@ -10,7 +10,7 @@ public static partial class MM
     /// 获取最优的设备.
     /// </summary>
     /// <returns></returns>
-    public static torch.Device GetOpTimalDevice()
+    public static torch.Device GetOptimalDevice()
     {
         Device defaultDevice = default!;
         if (torch.cuda.is_available())

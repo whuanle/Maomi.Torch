@@ -5,7 +5,7 @@ using transforms = TorchSharp.torchvision.transforms;
 using Maomi.Torch;
 using TorchSharp.Modules;
 
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 Console.WriteLine($"当前正在使用 {defaultDevice}");

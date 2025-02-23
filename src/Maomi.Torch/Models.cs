@@ -1,21 +1,29 @@
 ﻿#pragma warning disable CS1591 // 缺少对公共可见类型或成员的 XML 注释
 
-using System;
-using System.IO;
 using System.Security.Cryptography;
 using TorchSharp.Modules;
+using TorchSharp.PyBridge;
 
 namespace Maomi.Torch;
 public static partial class MM
 {
     public static string ReposityBase { get; set; } = Huggingface;
+    public static string PthReposityBase { get; set; } = HuggingfacePth;
 
     public const string Huggingface = "https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/";
     public const string ModelScope = "https://www.modelscope.cn/models/whuanle/torchcsharp/resolve/master/dats/";
 
+    public const string HuggingfacePth = "https://huggingface.co/whuanle/torchcsharp/resolve/main/checkpoints/";
+    public const string ModelScopePth = "https://www.modelscope.cn/models/whuanle/torchcsharp/resolve/master/checkpoints/";
+
     public static AlexNet LoadModel(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadModelAsync(net, strict, skip, loadedParameters).Result;
+    }
+
+    public static AlexNet load_dat(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadModel(net, strict, skip, loadedParameters);
     }
 
     public static async Task<AlexNet> LoadModelAsync(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -46,10 +54,44 @@ public static partial class MM
 
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as AlexNet)!;
     }
+
+    public static AlexNet load_pth(this AlexNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "alexnet-owt-7be5be79.pth");
+        var tempFilePath = $"alexnet_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 =  GetModelMd5(httpClient, "alexnet-owt-7be5be79.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as AlexNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "alexnet-owt-7be5be79.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as AlexNet)!;
+    }
+
+    public static GoogleNet load_dat(this GoogleNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadModelAsync(net, strict, skip, loadedParameters).Result;
+    }
+
     public static GoogleNet LoadModel(this GoogleNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadModelAsync(net, strict, skip, loadedParameters).Result;
     }
+
     public static async Task<GoogleNet> LoadModelAsync(this GoogleNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/googlenet.dat
@@ -78,10 +120,45 @@ public static partial class MM
 
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as GoogleNet)!;
     }
+
+    public static GoogleNet load_pth(this GoogleNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "googlenet-1378be20.pth");
+        var tempFilePath = $"googlenet_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "googlenet-1378be20.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as GoogleNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "googlenet-1378be20.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as GoogleNet)!;
+    }
+
+
+    public static InceptionV3 load_dat(this InceptionV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadModelAsync(net, strict, skip, loadedParameters).Result;
+    }
+
     public static InceptionV3 LoadModel(this InceptionV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadModelAsync(net, strict, skip, loadedParameters).Result;
     }
+
     public static async Task<InceptionV3> LoadModelAsync(this InceptionV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/inception_v3.dat
@@ -109,6 +186,38 @@ public static partial class MM
         await DownloadFileWithProgressAsync(httpClient, ReposityBase + "inception_v3.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
 
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as InceptionV3)!;
+    }
+
+    public static InceptionV3 load_pth(this InceptionV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "inception_v3_google-0cc3c7bd.pth");
+        var tempFilePath = $"inception_v3_google_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "inception_v3_google-0cc3c7bd.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as InceptionV3)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "inception_v3_google-0cc3c7bd.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as InceptionV3)!;
+    }
+
+    public static MobileNetV2 load_dat(this MobileNetV2 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadModelAsync(net, strict, skip, loadedParameters).Result;
     }
 
     public static MobileNetV2 LoadModel(this MobileNetV2 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -144,6 +253,38 @@ public static partial class MM
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV2)!;
     }
 
+    public static MobileNetV2 load_pth(this MobileNetV2 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "mobilenet_v2-b0353104.pth");
+        var tempFilePath = $"mobilenet_v2_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "mobilenet_v2-b0353104.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV2)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "mobilenet_v2-b0353104.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV2)!;
+    }
+
+    public static MobileNetV3 load_large_dat(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadMobileNetV3LargeAsync(net, strict, skip, loadedParameters).Result;
+    }
+
     public static MobileNetV3 LoadMobileNetV3Large(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadMobileNetV3LargeAsync(net, strict, skip, loadedParameters).Result;
@@ -177,6 +318,38 @@ public static partial class MM
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
     }
 
+    public static MobileNetV3 load_large_pth(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "mobilenet_v3_large-8738ca79.pth");
+        var tempFilePath = $"mobilenet_v3_large_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "mobilenet_v3_large-8738ca79.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "mobilenet_v3_large-8738ca79.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
+    }
+
+    public static MobileNetV3 load_small_dat(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadMobileNetV3SmallAsync(net, strict, skip, loadedParameters).Result;
+    }
+
     public static MobileNetV3 LoadMobileNetV3Small(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadMobileNetV3SmallAsync(net, strict, skip, loadedParameters).Result;
@@ -208,6 +381,38 @@ public static partial class MM
 
         await DownloadFileWithProgressAsync(httpClient, ReposityBase + "mobilenet_v3_small.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (net.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
+    }
+
+    public static MobileNetV3 load_small_pth(this MobileNetV3 net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "mobilenet_v3_small-047dcff4.pth");
+        var tempFilePath = $"mobilenet_v3_mall_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "mobilenet_v3_small-047dcff4.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "mobilenet_v3_small-047dcff4.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as MobileNetV3)!;
+    }
+
+    public static ResNet load_renets101_dat(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadResnet101Async(resnet, strict, skip, loadedParameters).Result;
     }
 
     public static ResNet LoadResnet101(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -244,6 +449,67 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
+
+    public static ResNet load_renets101_pth(this ResNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "resnet101-63fe2227.pth");
+        var tempFilePath = $"resnet101_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "resnet101-63fe2227.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "resnet101-63fe2227.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+    public static ResNet load_resnet152_pth(this ResNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "resnet152-394f9c45.pth");
+        var tempFilePath = $"resnet152_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "resnet152-394f9c45.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "resnet152-394f9c45.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+
+    public static ResNet load_resnet152_dat(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadResnet152Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
     public static ResNet LoadResnet152(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadResnet152Async(resnet, strict, skip, loadedParameters).Result;
@@ -278,6 +544,38 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
+    public static ResNet load_resnet18_pth(this ResNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "resnet18-f37072fd.pth");
+        var tempFilePath = $"resnet18_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "resnet18-f37072fd.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "resnet18-f37072fd.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+    public static ResNet load_resnet18_dat(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadResnet18Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
     public static ResNet LoadResnet18(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadResnet18Async(resnet, strict, skip, loadedParameters).Result;
@@ -309,6 +607,38 @@ public static partial class MM
 
         await DownloadFileWithProgressAsync(httpClient, ReposityBase + "resnet18.dat", Path.Combine(torchcsharpDir, tempFilePath), modelPath);
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+    public static ResNet load_resnet34_pth(this ResNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "resnet34-b627a593.pth");
+        var tempFilePath = $"resnet34_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "resnet34-b627a593.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "resnet34-b627a593.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+    public static ResNet load_resnet34_dat(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadResnet34Async(resnet, strict, skip, loadedParameters).Result;
     }
 
     public static ResNet LoadResnet34(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
@@ -345,6 +675,38 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
+    public static ResNet load_resnet50_pth(this ResNet net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "resnet50-0676ba61.pth");
+        var tempFilePath = $"resnet50_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "resnet50-0676ba61.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "resnet50-0676ba61.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+    }
+
+    public static ResNet load_resnet50_dat(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadResnet50Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
     public static ResNet LoadResnet50(this ResNet resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         return LoadResnet50Async(resnet, strict, skip, loadedParameters).Result;
@@ -379,12 +741,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static VGG LoadVG11(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg11_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG11Async(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg11-8a719046.pth");
+        var tempFilePath = $"vgg11_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg11-8a719046.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg11-8a719046.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG11Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg11_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG11Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG11(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG11Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG11Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg11.dat
 
@@ -413,12 +807,46 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-    public static VGG LoadVG11BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+
+    public static ResNet load_vgg11bn_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG11BNAsync(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg11_bn-6002323d.pth");
+        var tempFilePath = $"vgg11_bn_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg11_bn-6002323d.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg11_bn-6002323d.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG11BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+
+    public static VGG load_vgg11bn_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG11BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG11BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG11BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG11BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg11_bn.dat
 
@@ -446,12 +874,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-    public static VGG LoadVG13(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg13_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG13Async(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg13-19584684.pth");
+        var tempFilePath = $"vgg13_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg13-19584684.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg13-19584684.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG13Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg13_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG13Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG13(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG13Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG13Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg13.dat
 
@@ -479,12 +939,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-    public static VGG LoadVG13BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg13bn_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG13BNAsync(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg13_bn-abd245e5.pth");
+        var tempFilePath = $"vgg13_bn_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg13_bn-abd245e5.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg13_bn-abd245e5.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG13BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg13bn_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG13BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG13BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG13BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG13BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg13_bn.dat
 
@@ -512,12 +1004,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-    public static VGG LoadVG16(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg16_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG16Async(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg16-397923af.pth");
+        var tempFilePath = $"vgg16_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg16-397923af.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg16-397923af.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG16Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg16_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG16Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG16(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG16Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG16Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg16.dat
 
@@ -545,13 +1069,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-
-    public static VGG LoadVG16BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg16bn_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG16BNAsync(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg16_bn-6c64b313.pth");
+        var tempFilePath = $"vgg16_bn_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg16_bn-6c64b313.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg16_bn-6c64b313.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG16BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg16bn_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG16BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG16BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG16BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG16BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg16_bn.dat
 
@@ -579,12 +1134,44 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-    public static VGG LoadVG19(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static ResNet load_vgg19_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG19Async(resnet, strict, skip, loadedParameters).Result;
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg19-dcbb9e9d.pth");
+        var tempFilePath = $"vgg19_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg19-dcbb9e9d.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg19-dcbb9e9d.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG19Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg19_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG19Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static VGG LoadVGG19(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG19Async(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG19Async(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg19.dat
 
@@ -612,13 +1199,43 @@ public static partial class MM
         return (resnet.load(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as VGG)!;
     }
 
-
-    public static VGG LoadVG19BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG LoadVGG19BN(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
-        return LoadVG19BNAsync(resnet, strict, skip, loadedParameters).Result;
+        return LoadVGG19BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+    public static ResNet load_vgg19bn_pth(this VGG net, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        var torchcsharpDir = CheckPath();
+
+        HttpClient httpClient = new HttpClient();
+        var modelPath = Path.Combine(torchcsharpDir, "vgg19_bn-c79401a0.pth");
+        var tempFilePath = $"vgg19_bn_{DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString("x16")}.pth";
+
+        var modelMd5 = GetModelMd5(httpClient, "vgg19_bn-c79401a0.pth").Result;
+
+        if (File.Exists(modelPath))
+        {
+            var localFileMd5 = CalculateMD5(modelPath);
+
+            if (string.Equals(modelMd5, localFileMd5, StringComparison.OrdinalIgnoreCase))
+            {
+                return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
+            }
+
+            File.Delete(modelPath);
+        }
+
+        DownloadFileWithProgressAsync(httpClient, PthReposityBase + "vgg19_bn-c79401a0.pth", Path.Combine(torchcsharpDir, tempFilePath), modelPath).Wait();
+
+        return (net.load_py(location: modelPath, strict: strict, skip: skip, loadedParameters: loadedParameters) as ResNet)!;
     }
 
-    public static async Task<VGG> LoadVG19BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    public static VGG load_vgg19bn_dat(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
+    {
+        return LoadVGG19BNAsync(resnet, strict, skip, loadedParameters).Result;
+    }
+
+    public static async Task<VGG> LoadVGG19BNAsync(this VGG resnet, bool strict = true, IList<string>? skip = null, Dictionary<string, bool>? loadedParameters = null)
     {
         // https://huggingface.co/whuanle/torchcsharp/resolve/main/dats/vgg19_bn.dat
 

@@ -1,5 +1,4 @@
-﻿using MathNet.Numerics;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using TorchSharp;
 
@@ -145,14 +144,14 @@ public static partial class MM
     /// </summary>
     /// <param name="tensor"></param>
     /// <returns></returns>
-    public static Complex32[] ToComplex32Array(this torch.Tensor tensor)
+    public static (float, float)[] ToComplex32Array(this torch.Tensor tensor)
     {
-        Complex32[] array = new Complex32[tensor.size()[0]];
+        (float, float)[] array = new (float, float)[tensor.size()[0]];
 
         for (int i = 0; i < array.Length; i++)
         {
             var complex = tensor.ToComplex32();
-            array[i] = new Complex32(complex.Real, complex.Imaginary);
+            array[i] = (complex.Real, complex.Imaginary);
 
         }
 
@@ -197,5 +196,5 @@ public static partial class MM
         }
 
         return array;
-    }   
+    }
 }

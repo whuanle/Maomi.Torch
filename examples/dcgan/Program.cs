@@ -6,7 +6,7 @@ using TorchSharp.Modules;
 using static TorchSharp.torch;
 
 // 使用 GPU 启动
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 // Set random seed for reproducibility

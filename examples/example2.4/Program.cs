@@ -5,7 +5,7 @@ using static TorchSharp.torch;
 using static TorchSharp.torchvision;
 using model = TorchSharp.torchvision.models;
 
-var defaultDeface = MM.GetOpTimalDevice();
+var defaultDeface = MM.GetOptimalDevice();
 torch.set_default_device(defaultDeface);
 
 var resnet101 = model.resnet101(device: defaultDeface);

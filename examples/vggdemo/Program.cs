@@ -8,7 +8,7 @@ using static TorchSharp.torch.distributions.transforms;
 using static TorchSharp.torch.optim;
 using static SkiaSharp.SKImageFilter;
 
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 Console.WriteLine($"当前正在使用 {defaultDevice}");

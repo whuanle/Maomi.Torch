@@ -43,8 +43,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="TorchSharp" Version="0.103.1" />
+		<PackageReference Include="TorchSharp.PyBridge" Version="1.4.3" />
 		<PackageReference Include="TorchVision" Version="0.103.1" />
-		<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
 	</ItemGroup>
 

@@ -7,7 +7,7 @@ using optim = TorchSharp.torch.optim;
 using transforms = TorchSharp.torchvision.transforms;
 
 // 使用 GPU 启动
-Device defaultDevice = MM.GetOpTimalDevice();
+Device defaultDevice = MM.GetOptimalDevice();
 torch.set_default_device(defaultDevice);
 
 
