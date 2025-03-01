@@ -1,5 +1,4 @@
-﻿using MathNet.Numerics;
-using ScottPlot;
+﻿using ScottPlot;
 using ScottPlot.Plottables;
 using System.Numerics;
 using TorchSharp;
@@ -182,15 +181,15 @@ public static partial class MMS
 
     private static Scatter ScatterComplex32(PlottableAdder adder, torch.Tensor xs, torch.Tensor ys, ScottPlot.Color? color, long[] xsSize, long[] ysSize)
     {
-        Complex32[] xsFloat = new Complex32[xsSize[0]];
-        Complex32[] ysFloat = new Complex32[ysSize[0]];
+        (float,float)[] xsFloat = new (float, float)[xsSize[0]];
+        (float, float)[] ysFloat = new (float, float)[ysSize[0]];
 
         for (int i = 0; i < xsSize[0]; i++)
         {
             var cx = xs[i].ToComplex32();
             var cy = ys[i].ToComplex32();
-            xsFloat[i] = new Complex32(cx.Real,cx.Imaginary);
-            ysFloat[i] = new Complex32(cy.Real, cy.Imaginary);
+            xsFloat[i] = new (cx.Real,cx.Imaginary);
+            ysFloat[i] = new (cy.Real, cy.Imaginary);
         }
 
         return adder.Scatter(xsFloat, ysFloat, color);

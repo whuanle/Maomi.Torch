@@ -228,7 +228,7 @@ public static partial class MM
 
         bool isTransparent = channels == 4;
 
-        return MM.ToTensor(isTransparent ? torchvision.io.ImageReadMode.RGB_ALPHA : torchvision.io.ImageReadMode.RGB, bitmap);
+        return MM.transforms.ToTensor(isTransparent ? torchvision.io.ImageReadMode.RGB_ALPHA : torchvision.io.ImageReadMode.RGB, bitmap);
     }
 
     private static Tensor ImageToGrayTensor(SKBitmap bitmap)
