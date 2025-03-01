@@ -20,6 +20,16 @@ public static partial class MM
     /// <param name="channels">Number of image channels, default is 1、3、4.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
+    public static Tensor load_img(string imagePath, int channels = 3) => LoadImage(imagePath, channels);
+
+    /// <summary>
+    /// Load the image and convert to Tensor.<br />
+    /// 加载图片并转换为 Tensor.
+    /// </summary>
+    /// <param name="imagePath">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 1、3、4.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static Tensor LoadImage(string imagePath, int channels = 3)
     {
         using (SKBitmap bitmap = SKBitmap.Decode(imagePath))
@@ -34,6 +44,16 @@ public static partial class MM
             return ImageToTensor(bitmap, channels);
         }
     }
+
+    /// <summary>
+    /// Load the image and convert to Tensor.<br />
+    /// 加载图片并转换为 Tensor.
+    /// </summary>
+    /// <param name="stream">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static Tensor load_img(Stream stream, int channels = 3) => LoadImage(stream, channels);
 
     /// <summary>
     /// Load the image and convert to Tensor.<br />
@@ -66,12 +86,32 @@ public static partial class MM
     /// <param name="channels">Number of image channels, default is 3.</param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
+    public static Task<Tensor> load_img_from_url(string url, int channels = 3) => LoadImageFromUrl(url, channels);
+
+    /// <summary>
+    /// Load the image and convert to Tensor.<br />
+    /// 加载图片并转换为 Tensor.
+    /// </summary>
+    /// <param name="url">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static async Task<Tensor> LoadImageFromUrl(string url, int channels = 3)
     {
         using HttpClient httpClient = new();
         var stream = await httpClient.GetStreamAsync(url);
         return LoadImage(stream, channels);
     }
+
+    /// <summary>
+    /// Load the image and convert to Tensor.<br />
+    /// 加载图片并转换为 Tensor.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static List<Tensor> load_imgs(IList<string> images, int channels = 3) => LoadImages(images, channels);
 
     /// <summary>
     /// Load the image and convert to Tensor.<br />
@@ -100,12 +140,31 @@ public static partial class MM
     /// <param name="images">Picture path.</param>
     /// <param name="channels">Number of image channels, default is 3.</param>
     /// <returns></returns>
+    public static Tensor compose_imgs(IList<string> images, int channels = 3) => LoadImagesCompose(images, channels);
+
+    /// <summary>
+    /// Batch load images and merge them into one Tensor.<br />
+    /// 批量加载图片并合并到一个 Tensor 中.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
     public static Tensor LoadImagesCompose(IList<string> images, int channels = 3)
     {
         var list = LoadImages(images, channels).Select(x => x.squeeze(0));
         var batchedTensor = torch.stack(list, dim: 0);
         return batchedTensor;
     }
+
+    /// <summary>
+    /// Load the image and convert to Tensor.<br />
+    /// 加载图片并转换为 Tensor.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static Tensor[] load_img_from_urls(IList<string> images, int channels = 3) => LoadImagesFromUrl(images, channels);
 
     /// <summary>
     /// Load the image and convert to Tensor.<br />
@@ -134,6 +193,15 @@ public static partial class MM
 
         return tensors.OrderBy(x => x.Key).Select(x => x.Value).ToArray();
     }
+
+    /// <summary>
+    /// Batch load images and merge them into one Tensor.<br />
+    /// 批量加载图片并合并到一个 Tensor 中.
+    /// </summary>
+    /// <param name="images">Picture path.</param>
+    /// <param name="channels">Number of image channels, default is 3.</param>
+    /// <returns></returns>
+    public static Tensor load_imgs_from_urls(IList<string> images, int channels = 3) => LoadImagesFromUrlCompose(images, channels);
 
     /// <summary>
     /// Batch load images and merge them into one Tensor.<br />

@@ -82,6 +82,9 @@ public class ImageFolderDataset : torch.utils.data.Dataset
 
 public static partial class MM
 {
+    /// <summary>
+    /// Datasets.
+    /// </summary>
     public static class Datasets
     {
         /// <summary>
@@ -95,62 +98,5 @@ public static partial class MM
             var datasets = new ImageFolderDataset(root, target_transform);
             return datasets;
         }
-    }
-}
-
-public static partial class MM
-{
-    /// <summary>
-    /// torchvision.io.SkiaImager.ToTensor.
-    /// </summary>
-    /// <param name="mode"></param>
-    /// <param name="bitmap"></param>
-    /// <returns></returns>
-    public delegate Tensor SkiaImagerToTensor(ImageReadMode mode, SKBitmap bitmap);
-
-    /// <summary>
-    /// torchvision.io.SkiaImager.ToTensor.
-    /// </summary>
-    public static SkiaImagerToTensor ToTensor;
-    static MM()
-    {
-        ToTensor = BuildSkiaImagerToTensor();
-    }
-
-    private static SkiaImagerToTensor BuildSkiaImagerToTensor()
-    {
-        MethodInfo? toTensorMethod = typeof(torchvision.io.SkiaImager)
-            .GetMethod("ToTensor", BindingFlags.NonPublic | BindingFlags.Static);
-
-        if (toTensorMethod == null)
-        {
-            ArgumentNullException.ThrowIfNull(toTensorMethod, nameof(toTensorMethod));
-        }
-
-        /*
-                 MethodInfo? toTensorMethod = typeof(torchvision.io.SkiaImager)
-    .GetMethod("ToTensor", BindingFlags.NonPublic | BindingFlags.Static);
-        var d = toTensorMethod.Invoke(null, new object[] { isTransparent ? torchvision.io.ImageReadMode.RGB : torchvision.io.ImageReadMode.RGB_ALPHA, bitmap });
-
-         */
-
-        ParameterExpression modeParameter = Expression.Parameter(typeof(ImageReadMode), "mode");
-        ParameterExpression bitmapParameter = Expression.Parameter(typeof(SKBitmap), "bitmap");
-
-        var arguments = new ParameterExpression[] { modeParameter, bitmapParameter };
-
-        MethodCallExpression methodCall = Expression.Call(
-            instance: null,
-            method: toTensorMethod,
-            arguments: arguments
-        );
-
-        Expression<SkiaImagerToTensor> lambda = Expression.Lambda<SkiaImagerToTensor>(
-            methodCall,
-            parameters: arguments
-        );
-
-        SkiaImagerToTensor tensorDelegate = lambda.Compile();
-        return tensorDelegate;
     }
 }

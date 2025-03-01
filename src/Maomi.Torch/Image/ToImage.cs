@@ -12,6 +12,14 @@ public static partial class MM
     /// </summary>
     /// <param name="imageTensor"></param>
     /// <returns></returns>
+    public static SixLabors.ImageSharp.Image to_img_abgr32(this Tensor imageTensor) => ToImageAbgr32(imageTensor);
+
+    /// <summary>
+    /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />
+    /// 将张量数据转换为 <see cref="SixLabors.ImageSharp.Image"/> 对象.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <returns></returns>
     public static SixLabors.ImageSharp.Image ToImageAbgr32(this Tensor imageTensor)
     {
         // 将张量数据转换为 byte 数组
@@ -31,6 +39,14 @@ public static partial class MM
 
         return image;
     }
+
+    /// <summary>
+    /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />
+    /// 将张量数据转换为 <see cref="SixLabors.ImageSharp.Image"/> 对象.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <returns></returns>
+    public static SixLabors.ImageSharp.Image to_img_argb32(this Tensor imageTensor) => ToImageArgb32(imageTensor);
 
     /// <summary>
     /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />
@@ -64,6 +80,14 @@ public static partial class MM
     /// </summary>
     /// <param name="imageTensor"></param>
     /// <returns></returns>
+    public static SixLabors.ImageSharp.Image to_img_l8(this Tensor imageTensor) => ToImageL8(imageTensor);
+
+    /// <summary>
+    /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />
+    /// 将张量数据转换为 <see cref="SixLabors.ImageSharp.Image"/> 对象.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <returns></returns>
     public static SixLabors.ImageSharp.Image ToImageL8(this Tensor imageTensor)
     {
         // 将张量数据转换为 byte 数组
@@ -83,6 +107,14 @@ public static partial class MM
 
         return image;
     }
+
+    /// <summary>
+    /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />
+    /// 将张量数据转换为 <see cref="SixLabors.ImageSharp.Image"/> 对象.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <returns></returns>
+    public static SixLabors.ImageSharp.Image to_img_l16(this Tensor imageTensor) => ToImageL16(imageTensor);
 
     /// <summary>
     /// The tensor data into <see cref= "SixLabors.ImageSharp.Image" /> object.<br />

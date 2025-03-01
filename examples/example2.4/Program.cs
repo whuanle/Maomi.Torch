@@ -10,7 +10,7 @@ torch.set_default_device(defaultDeface);
 
 var resnet101 = model.resnet101(device: defaultDeface);
 
-MM.ReposityBase = MM.ModelScope;
+MM.DatReposityBase = MM.ModelScopeDat;
 
 resnet101 = resnet101.LoadResnet101();
 resnet101.to(defaultDeface);

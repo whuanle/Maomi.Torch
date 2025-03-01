@@ -9,6 +9,12 @@ public static partial class MM
     /// Show the image in the system default image viewer.<br />
     /// </summary>
     /// <param name="tensor"></param>
+    public static void show_img(this Tensor tensor) => ShowImage(tensor);
+
+    /// <summary>
+    /// Show the image in the system default image viewer.<br />
+    /// </summary>
+    /// <param name="tensor"></param>
     public static void ShowImage(this Tensor tensor)
     {
         var tempName = Path.GetTempFileName() + ".png";

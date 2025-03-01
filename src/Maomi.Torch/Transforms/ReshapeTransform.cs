@@ -19,6 +19,11 @@ public class ReshapeTransform : ITransform
         _shape = shape;
     }
 
+    /// <summary>
+    /// call.
+    /// </summary>
+    /// <param name="input"></param>
+    /// <returns></returns>
     public Tensor call(Tensor input)
     {
         return input.view(_shape);
@@ -35,6 +40,15 @@ public static partial class MM
     /// </summary>
     public static partial class transforms
     {
+        /// <summary>
+        /// Reshape a tensor.
+        /// </summary>
+        /// <param name="shape"></param>
+        /// <returns></returns>
+        public static ITransform Reshape(long[] shape)
+        {
+            return new ReshapeTransform(shape);
+        }
 
         /// <summary>
         /// Reshape a tensor.

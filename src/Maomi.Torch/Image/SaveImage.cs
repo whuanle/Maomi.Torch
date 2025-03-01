@@ -15,10 +15,26 @@ public static partial class MM
     /// </summary>
     /// <param name="imageTensor"></param>
     /// <param name="filePath"></param>
+    public static void save_png(this Tensor imageTensor, string filePath) => SavePng(imageTensor, filePath);
+
+    /// <summary>
+    /// Save the tensor data as a .png image file。<br />
+    /// 将张量数据保存为 .png 图片文件.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <param name="filePath"></param>
     public static void SavePng(this Tensor imageTensor, string filePath)
     {
         SaveImage(imageTensor, filePath, torchvision.ImageFormat.Png);
     }
+
+    /// <summary>
+    /// Save the tensor data as a .jpeg image file。<br />
+    /// 将张量数据保存为 .jpeg 图片文件.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <param name="filePath"></param>
+    public static void save_jpeg(this Tensor imageTensor, string filePath) => SaveJpeg(imageTensor, filePath);
 
     /// <summary>
     /// Save the tensor data as a .jpeg image file。<br />
@@ -32,12 +48,23 @@ public static partial class MM
     }
 
     /// <summary>
+    /// Save the tensor data as a picture file<br />
     /// 将张量数据保存为图片文件.
     /// </summary>
     /// <param name="imageTensor"></param>
     /// <param name="filePath">图片路径.</param>
     /// <param name="imageFormat">图像格式.</param>
-    /// <param name="quality">图像质量.</param>
+    /// <param name="quality">Image quality.<br />图像质量.</param>
+    public static void save_img(this Tensor imageTensor, string filePath, torchvision.ImageFormat imageFormat, int quality = 75) => SaveImage(imageTensor, filePath, imageFormat, quality);
+
+    /// <summary>
+    /// Save the tensor data as a picture file<br />
+    /// 将张量数据保存为图片文件.
+    /// </summary>
+    /// <param name="imageTensor"></param>
+    /// <param name="filePath">图片路径.</param>
+    /// <param name="imageFormat">图像格式.</param>
+    /// <param name="quality">Image quality.<br />图像质量.</param>
     public static void SaveImage(this Tensor imageTensor, string filePath, torchvision.ImageFormat imageFormat, int quality = 75)
     {
         var shapeSize = imageTensor.shape;
@@ -63,13 +90,39 @@ public static partial class MM
         save_image(imageTensor, filePath, imageFormat, imager: new SkiaImager(quality));
     }
 
-    public static void save_image(torch.Tensor tensor, string filename, ImageFormat format, long nrow = 8L, int padding = 2, bool normalize = false, (double low, double high)? value_range = null, bool scale_each = false, double pad_value = 0.0, io.Imager imager = null)
+    /// <summary>
+    /// Save the tensor data as a picture file.<br />
+    /// </summary>
+    /// <param name="tensor"></param>
+    /// <param name="filename"></param>
+    /// <param name="format"></param>
+    /// <param name="nrow"></param>
+    /// <param name="padding"></param>
+    /// <param name="normalize"></param>
+    /// <param name="value_range"></param>
+    /// <param name="scale_each"></param>
+    /// <param name="pad_value"></param>
+    /// <param name="imager"></param>
+    public static void save_image(this torch.Tensor tensor, string filename, ImageFormat format, long nrow = 8L, int padding = 2, bool normalize = false, (double low, double high)? value_range = null, bool scale_each = false, double pad_value = 0.0, io.Imager? imager = null)
     {
         using FileStream filestream = new FileStream(filename, FileMode.OpenOrCreate);
         save_image(tensor, filestream, format, nrow, padding, normalize, value_range, scale_each, pad_value, imager);
     }
 
-    public static void save_image(torch.Tensor tensor, Stream filestream, ImageFormat format, long nrow = 8L, int padding = 2, bool normalize = false, (double low, double high)? value_range = null, bool scale_each = false, double pad_value = 0.0, io.Imager imager = null)
+    /// <summary>
+    /// Save the tensor data as a picture file.<br />
+    /// </summary>
+    /// <param name="tensor"></param>
+    /// <param name="filestream"></param>
+    /// <param name="format"></param>
+    /// <param name="nrow"></param>
+    /// <param name="padding"></param>
+    /// <param name="normalize"></param>
+    /// <param name="value_range"></param>
+    /// <param name="scale_each"></param>
+    /// <param name="pad_value"></param>
+    /// <param name="imager"></param>
+    public static void save_image(torch.Tensor tensor, Stream filestream, ImageFormat format, long nrow = 8L, int padding = 2, bool normalize = false, (double low, double high)? value_range = null, bool scale_each = false, double pad_value = 0.0, io.Imager? imager = null)
     {
         using (torch.NewDisposeScope())
         {
